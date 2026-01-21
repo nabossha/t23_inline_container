@@ -24,9 +24,29 @@ Adds a field "Content elements" to all container to make contained elements edit
 There is no configuration needed, just install with `composer req team23/t23-inline-container`.
 The field will be added automatically to every registered container.
 
+### Hint: Consistent use of maxitems in container column definitions
+When defining container columns in your TCA, make sure you handle the maxitems setting consistently across all columns:
+either define maxitems for every column, or omit it for all columns.
+
+Inconsistent usage (e.g., setting maxitems on only some columns) can lead to unexpected behavior when TYPO3 or the container extension calculates overall limits.
+
+For Example:
+````php
+[
+    ['name' => 'left side', 'colPos' => 201, 'maxitems' => 2],
+    ['name' => 'right side', 'colPos' => 202, 'maxitems' => 2]
+]
+# or
+[
+    ['name' => 'left side', 'colPos' => 201],
+    ['name' => 'right side', 'colPos' => 202]
+]
+````
+
 ## Compatibility
 
 | `t23_inline_container` | TYPO3 |
 |------------------------|-------|
-| 0.x                    | 11    |
-| 0.x                    | 12    |
+| \>= 0.0.1              | 11    |
+| \>= 0.0.10             | 12    |
+| \>= 0.0.15             | 13    |

@@ -41,14 +41,54 @@ class DataHandler implements SingletonInterface
         }
     }
 
-    public function processCmdmap_preProcess($command, $table, $id, $value, $pObj, $pasteUpdate)
+    /**
+     * @param array $incomingFieldArray
+     * @param string $table
+     * @param int|string $id
+     * @param \TYPO3\CMS\Core\DataHandling\DataHandler $dataHandler
+     * @return void
+     */
+    public function processDatamap_preProcessFieldArray(
+        array &$incomingFieldArray,
+        string $table,
+        $id,
+        \TYPO3\CMS\Core\DataHandling\DataHandler $dataHandler
+    ): void {
+        // Only handle content elements
+        if ($table !== 'tt_content') {
+            return;
+        }
+
+        // Only relevant if this is a translated record
+        $languageUid = (int)($incomingFieldArray['sys_language_uid'] ?? 0);
+        if ($languageUid <= 0) {
+            return;
+        }
+
+        // If this record has a container parent, check if it's a localized one
+        $txContainerParent = (int)($incomingFieldArray['tx_container_parent'] ?? 0);
+        if ($txContainerParent > 0) {
+            // Fetch the parent record
+            $parentRecord = \TYPO3\CMS\Backend\Utility\BackendUtility::getRecord('tt_content', $txContainerParent);
+
+            // If parent exists and is a localized record, resolve its default language UID
+            if (!empty($parentRecord['l18n_parent'])) {
+                $defaultParentUid = (int)$parentRecord['l18n_parent'];
+
+                // Rewrite to the default-language container
+                $incomingFieldArray['tx_container_parent'] = $defaultParentUid;
+            }
+        }
+    }
+
+    public function processCmdmap_preProcess($command, $table, $id, $value, $pObj, $pasteUpdate): void
     {
         if (in_array($command, ['copy', 'localize']) && $table === 'tt_content') {
             $GLOBALS['TCA']['tt_content']['columns']['tx_t23inlinecontainer_elements']['config']['type'] = 'none';
         }
     }
 
-    public function processCmdmap_postProcess($command, $table, $id, $value, $pObj, $pasteUpdate, $pasteDatamap)
+    public function processCmdmap_postProcess($command, $table, $id, $value, $pObj, $pasteUpdate, $pasteDatamap): void
     {
         if (in_array($command, ['copy', 'localize']) && $table === 'tt_content') {
             $GLOBALS['TCA']['tt_content']['columns']['tx_t23inlinecontainer_elements']['config']['type'] = 'tx_t23inlinecontainer_elements';
@@ -60,7 +100,7 @@ class DataHandler implements SingletonInterface
      * @param \TYPO3\CMS\Core\DataHandling\DataHandler $dataHandler
      * @return void
      */
-    public function processDatamap_afterAllOperations(\TYPO3\CMS\Core\DataHandling\DataHandler $dataHandler)
+    public function processDatamap_afterAllOperations(\TYPO3\CMS\Core\DataHandling\DataHandler $dataHandler): void
     {
         // Make sure that container sorting is only update once per container element
         // => Only run sorting update after all operations have been finished
