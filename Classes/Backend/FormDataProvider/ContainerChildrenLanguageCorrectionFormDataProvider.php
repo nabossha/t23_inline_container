@@ -49,6 +49,11 @@ class ContainerChildrenLanguageCorrectionFormDataProvider implements FormDataPro
                 continue;
             }
 
+            // hide children from other translation languages (not default, not current language)
+            if ($parentLanguageUid > 0 && $lang > 0 && $lang !== $parentLanguageUid) {
+                continue;
+            }
+
             // hide original language children when they have a translated element
             $childUid = (int)($child['databaseRow']['uid'] ?? 0);
             if (in_array($childUid, $translationsExistFor, true)) {
