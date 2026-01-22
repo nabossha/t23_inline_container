@@ -14,7 +14,6 @@ use B13\Container\Domain\Service\ContainerService;
 use B13\Container\Integrity\Database;
 use B13\Container\Tca\Registry;
 use Team23\T23InlineContainer\Integrity\Sorting;
-use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
@@ -40,6 +39,14 @@ class DataHandler implements SingletonInterface
             }
         }
     }
+
+    /**
+     * Note: Duplicate prevention during copy is now handled in EXT:container's
+     * CommandMapPostProcessingHook::copyOrMoveChildren() method, which checks
+     * if children already exist before copying.
+     *
+     * @see \B13\Container\Hooks\Datahandler\CommandMapPostProcessingHook::copyOrMoveChildren()
+     */
 
     /**
      * @param array $incomingFieldArray
@@ -78,20 +85,6 @@ class DataHandler implements SingletonInterface
                 // Rewrite to the default-language container
                 $incomingFieldArray['tx_container_parent'] = $defaultParentUid;
             }
-        }
-    }
-
-    public function processCmdmap_preProcess($command, $table, $id, $value, $pObj, $pasteUpdate): void
-    {
-        if (in_array($command, ['copy', 'localize']) && $table === 'tt_content') {
-            $GLOBALS['TCA']['tt_content']['columns']['tx_t23inlinecontainer_elements']['config']['type'] = 'none';
-        }
-    }
-
-    public function processCmdmap_postProcess($command, $table, $id, $value, $pObj, $pasteUpdate, $pasteDatamap): void
-    {
-        if (in_array($command, ['copy', 'localize']) && $table === 'tt_content') {
-            $GLOBALS['TCA']['tt_content']['columns']['tx_t23inlinecontainer_elements']['config']['type'] = 'tx_t23inlinecontainer_elements';
         }
     }
 

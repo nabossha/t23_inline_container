@@ -12,6 +12,18 @@ defined('TYPO3') || die();
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass']['tx-t23inlinecontainer'] = 'Team23\T23InlineContainer\Hooks\DataHandler';
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass']['tx-t23inlinecontainer'] = 'Team23\T23InlineContainer\Hooks\DataHandler';
 
+/*
+ * Fix: Prevent double copying of container children
+ *
+ * XCLASS container's CommandMapPostProcessingHook to detect when children were
+ * already copied by TYPO3's inline mechanism and skip container's copy to prevent duplicates.
+ *
+ * Reference: https://github.com/b13/container/issues/557
+ */
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\B13\Container\Hooks\Datahandler\CommandMapPostProcessingHook::class] = [
+    'className' => \Team23\T23InlineContainer\Xclass\CommandMapPostProcessingHook::class,
+];
+
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['formDataGroup']['tcaDatabaseRecord'][\Team23\T23InlineContainer\Backend\FormDataProvider\ContainerChildrenFormDataProvider::class] = [
     'depends' => [
         \TYPO3\CMS\Backend\Form\FormDataProvider\PageTsConfig::class,
